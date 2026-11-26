@@ -9,6 +9,10 @@ const PIN_PADRAO = '1234';
 
 function doGet() {
   const cfg = getConfig_();
+  // Sem o arquivo index (app hospedado na Vercel), responde só que a API está ativa.
+  try { HtmlService.createHtmlOutputFromFile('index'); } catch (e) {
+    return ContentService.createTextOutput('API da agenda ativa.');
+  }
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle((cfg && cfg.nome) || 'Agendamento')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover');
