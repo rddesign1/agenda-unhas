@@ -12,6 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/config.js"></script>
+<meta name="app-build" content="26/11 10:50">
 <title>Agenda do Salão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -727,6 +728,7 @@ function renderEntrar() {
       <button class="btn block">Entrar</button>
       <p class="tip" style="margin:0;text-align:center">Sem senha e sem baixar nada. Seu número é usado só para os seus horários.</p>
       <button type="button" class="link" id="goAdmin" style="align-self:center">Sou a manicure</button>
+      ${BUILD ? `<p class="tip" style="margin:0;text-align:center;font-size:.72rem">Versão ${esc(BUILD)}</p>` : ''}
     </form>`;
   $('#goAdmin').onclick = renderLogin;
   $('#enter').onsubmit = async e => {
@@ -945,7 +947,8 @@ function vSalon() {
         <div><b>${esc(me.nome)}</b> · ${esc(fmtPhone(me.tel))}</div>
         <button class="btn ghost sm" id="logout" style="align-self:flex-start">Sair</button>
       </div>
-      <button class="link" id="goAdmin" style="align-self:center">Área da manicure</button>`
+      <button class="link" id="goAdmin" style="align-self:center">Área da manicure</button>
+      ${BUILD ? `<p class="tip" style="margin:0;text-align:center;font-size:.72rem">Versão ${esc(BUILD)}</p>` : ''}`
   });
   bindCommon();
   $('#logout').onclick = () => { sess.set(null); me = null; mine = []; view = 'home'; renderClient(); };
@@ -1304,6 +1307,15 @@ function shrink(file) {
     rd.readAsDataURL(file);
   });
 }
+
+/* ====== Atualização automática (versão publicada) ====== */
+const BUILD = (document.querySelector('meta[name="app-build"]') || {}).content || '';
+async function checkUpdate() {
+  if (!BUILD) return;
+  try { const r = await fetch('/version.txt?t=' + Date.now(), { cache: 'no-store' }); const v = (await r.text()).trim(); if (v && v !== BUILD) location.reload(); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
+setInterval(checkUpdate, 5 * 60 * 1000);
 
 /* ====== Início ====== */
 (async () => { applyBrand(cfg.cor); await loadPublic(); me = sess.get(); if (me) await loadMine(); renderClient(); })();
