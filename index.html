@@ -560,7 +560,10 @@ const Demo = (() => {
   // Remove clientes e depoimentos de exemplo antigos, mantendo a configuração do salão.
   const clean = m => { m.bookings = (m.bookings || []).filter(b => !/^(ex|old)\d+$/.test(b.id) && !/\(exemplo\)/.test(b.cliente || ''));
     if (m.config && m.config.depoimentos) m.config.depoimentos = m.config.depoimentos.filter(d => !/\(exemplo\)/.test(d.nome || '')); return m; };
-  const load = () => { if (mem) return mem; try { mem = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} mem = mem ? clean(mem) : seed(); return mem; };
+  const load = () => { if (mem) return mem; try { mem = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} mem = mem ? clean(mem) : seed();
+    // Limpeza única pedida em 26/11/2026: apaga todos os agendamentos de teste e o login de cliente salvo; mantém configuração e fotos.
+    try { if (!localStorage.getItem('agenda-wipe-2026-11-26')) { mem.bookings = []; localStorage.removeItem('agenda-cliente'); localStorage.setItem('agenda-wipe-2026-11-26', '1'); localStorage.setItem(KEY, JSON.stringify(mem)); } } catch (e) {}
+    return mem; };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) {} };
   function seed() { return { config: null, bookings: [], fotos: [] }; }
   const pin = () => (load().config && load().config.pin) || DEFAULT_CONFIG.pin;
