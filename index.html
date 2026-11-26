@@ -361,6 +361,71 @@ em{font-style:normal;color:inherit}
 .bk{border-left-width:3px}
 .chip{letter-spacing:.02em;font-size:.68rem;border-radius:6px}
 .banner{border-radius:10px}
+
+/* ====== Sem caixinhas: listas com divisórias, estilo app nativo ====== */
+:root{--fill:color-mix(in srgb, var(--fg) 5%, var(--surface))}
+.app,.screen{background:var(--surface)}
+.screen{gap:10px}
+.appbar{border-bottom-color:transparent}
+/* listas */
+.svc{gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-inline:-16px}
+.svc .opt{border:0;border-radius:0;background:transparent;box-shadow:none;padding:14px 16px}
+.svc .opt + .opt{box-shadow:inset 0 1px 0 var(--line)}
+.svc .opt[aria-pressed="true"]{background:var(--soft);box-shadow:none}
+.ic-c{background:transparent;width:auto;height:auto;color:var(--brand)}
+.bk{border:0;border-radius:0;background:transparent;padding:14px 0;border-bottom:1px solid var(--line);grid-template-columns:52px 1fr}
+.bk .t{font:700 1rem var(--body);position:relative;padding-left:12px}
+.bk .t::before{content:"";position:absolute;left:0;top:.45em;width:6px;height:6px;border-radius:50%;background:var(--st,var(--brand))}
+.chip{background:transparent;padding:0;font-weight:600;text-transform:none;font-size:.75rem;letter-spacing:0}
+.chip + .chip,.chip{margin-left:6px}
+/* blocos */
+.card,.summary,.about-card,.quote,.hero-card,.pick-sum,.next-row,.login-card,.kpi{border:0;box-shadow:none}
+.card{background:transparent;padding:0;border-radius:0}
+.summary{background:transparent;padding:0}
+.summary dl{gap:0}
+.summary dl > div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line)}
+.summary dd{margin:0;text-align:right}
+.summary dt{font-size:.88rem}
+.summary .tot{border-top:0;padding-top:12px}
+.hero-card{background:var(--soft);border-radius:14px}
+.pick-sum{background:transparent;padding:0 0 10px;border-bottom:1px solid var(--line);border-radius:0}
+.next-row{background:transparent;padding:0;font-size:.85rem;color:var(--muted)}
+.about-card{background:transparent;padding:4px 0 8px;border-radius:0}
+.quotes{gap:0}
+.quote{background:transparent;padding:14px 0;border-radius:0;border-bottom:1px solid var(--line)}
+.faq{gap:0}
+.faq details{border:0;border-radius:0;background:transparent;padding:0;border-bottom:1px solid var(--line)}
+.policy{border:0;background:transparent;padding:0;font-size:.8rem}
+.empty,.hint{border:0;padding:8px 0;border-radius:0}
+.login-card{background:transparent;padding:8px 16px 24px;margin:0;border-radius:0}
+.login-top{border-bottom:0;padding-bottom:8px}
+/* controles preenchidos, sem contorno */
+input,select,textarea{border:0;background:var(--fill)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:0}
+.day,.slot{border:0;background:var(--fill)}
+.day[aria-pressed="true"],.slot[aria-pressed="true"]{background:var(--brand)}
+.btn.ghost{border:0;background:var(--fill)}
+.icon-btn,.x{border:0;background:var(--fill)}
+.gallery button,.gal button{border-radius:10px}
+.steps .step i{border:0;background:var(--fill)}
+/* painel */
+.kpis{gap:0;flex-wrap:nowrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+.kpi{background:transparent;padding:0 12px;border-radius:0}
+.kpi + .kpi{border-left:1px solid var(--line)}
+.kpi:first-child{padding-left:0}
+.kpi span{text-transform:none;letter-spacing:0;font-size:.72rem}
+.app details.card{padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+#pane .card{padding:18px 0;border-bottom:1px solid var(--line)}
+#pane .card h3{font-size:1rem}
+.svcrow + .svcrow{border-top:1px solid var(--line)}
+.pix .qr{border:1px solid var(--line)}
+.banner{border:0}
+.tabbar{border-top:1px solid var(--line)}
+.steps .step.on i{background:var(--brand);color:var(--on-brand)}
+.steps .step.done i{background:var(--soft);color:var(--brand)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));row-gap:10px}
+.kpi b{font-size:1.05rem;white-space:nowrap}
+.kpi{min-width:0}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 </head>
