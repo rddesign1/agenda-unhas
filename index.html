@@ -481,11 +481,7 @@ const DEFAULT_CONFIG = {
   sobre: 'Oi! Sou a Juliana, manicure há 8 anos. Aqui você é atendida com hora marcada, sem pressa e com todo o cuidado: material esterilizado, lixas descartáveis e aquele papo bom enquanto suas unhas ficam prontas. (texto de exemplo, edite no painel)',
   diferenciais: ['Hora marcada, sem espera', 'Material esterilizado e lixas descartáveis', 'Sinal pelo Pix, o resto no dia'],
   pagamentos: 'Pix, dinheiro, débito e crédito',
-  depoimentos: [
-    { nome: 'Camila (exemplo)', texto: 'Minha esmaltação em gel durou três semanas perfeita. E agendar pelo link é muito prático.' },
-    { nome: 'Patrícia (exemplo)', texto: 'Atendimento caprichado e no horário certinho. Virei cliente fixa.' },
-    { nome: 'Renata (exemplo)', texto: 'Ambiente gostoso e a Ju tem mão de fada para cutícula.' }
-  ],
+  depoimentos: [],
   pin: '1234'
 };
 
@@ -561,27 +557,12 @@ function call(fn, ...args) {
 
 const Demo = (() => {
   const KEY = 'agenda-demo-v1'; let mem = null;
-  const load = () => { if (mem) return mem; try { mem = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (!mem) mem = seed(); return mem; };
+  // Remove clientes e depoimentos de exemplo antigos, mantendo a configuração do salão.
+  const clean = m => { m.bookings = (m.bookings || []).filter(b => !/^(ex|old)\d+$/.test(b.id) && !/\(exemplo\)/.test(b.cliente || ''));
+    if (m.config && m.config.depoimentos) m.config.depoimentos = m.config.depoimentos.filter(d => !/\(exemplo\)/.test(d.nome || '')); return m; };
+  const load = () => { if (mem) return mem; try { mem = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} mem = mem ? clean(mem) : seed(); return mem; };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) {} };
-  function seed() {
-    // Agendamentos de exemplo para o painel não abrir vazio.
-    const out = []; const base = new Date();
-    for (let i = 0, made = 0; i < 10 && made < 4; i++) {
-      const d = new Date(base); d.setDate(d.getDate() + i);
-      if (!DEFAULT_CONFIG.horarios[d.getDay()].aberto) continue;
-      const ex = [['10:00', 's1', 'Ana (exemplo)'], ['14:00', 's4', 'Bruna (exemplo)'], ['16:30', 's3', 'Carla (exemplo)']][made % 3];
-      const s = DEFAULT_CONFIG.servicos.find(x => x.id === ex[1]);
-      out.push({ id: 'ex' + made, criado_em: '', data: dk(d), hora: ex[0], duracao: s.duracao, servico: s.nome, preco: s.preco, cliente: ex[2], telefone: '11988887777', status: 'agendado', obs: '' });
-      made++;
-    }
-    // Clientes antigas (para a aba Retorno)
-    [[26, 'Daniela (exemplo)', 's4', '11977776666'], [34, 'Elaine (exemplo)', 's3', '11966665555'], [9, 'Fernanda (exemplo)', 's1', '11955554444']].forEach(([n, nome, sid, tel], k) => {
-      const d = new Date(base); d.setDate(d.getDate() - n); const s = DEFAULT_CONFIG.servicos.find(x => x.id === sid);
-      out.push({ id: 'old' + k, criado_em: '', data: dk(d), hora: '15:00', duracao: s.duracao, servico: s.nome, preco: s.preco, cliente: nome, telefone: tel, status: 'concluido', obs: '', sinal: 'pago' });
-    });
-    out.forEach(b => { if (b.sinal == null) b.sinal = b.id === 'ex0' ? 'pago' : 'pendente'; });
-    return { config: null, bookings: out, fotos: [] };
-  }
+  function seed() { return { config: null, bookings: [], fotos: [] }; }
   const pin = () => (load().config && load().config.pin) || DEFAULT_CONFIG.pin;
   const check = p => { if (String(p) !== String(pin())) throw new Error('PIN incorreto.'); };
   const overlaps = (data, hora, d) => load().bookings.some(b => b.data === data && b.status !== 'cancelado' && toMin(hora) < toMin(b.hora) + Number(b.duracao) && toMin(hora) + Number(d) > toMin(b.hora));
