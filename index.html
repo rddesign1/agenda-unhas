@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/config.js"></script>
-<meta name="app-build" content="26/11 11:01">
+<meta name="app-build" content="26/11 11:29">
 <title>Agenda do Salão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -618,12 +618,22 @@ function nextDays() {
 }
 
 /* ====== Tela da cliente ====== */
+const PUBKEY = 'agenda-pub-v1';
+function usePublic(r) {
+  cfg = Object.assign({}, DEFAULT_CONFIG, r.config || {}); busy = r.busy || []; fotos = r.fotos || [];
+  applyBrand(cfg.cor); document.title = cfg.nome || 'Agenda';
+}
+// Mostra na hora o que ficou salvo da última visita; os dados novos chegam em seguida.
+function cachedPublic() {
+  if (!IS_LIVE) return false;
+  try { const r = JSON.parse(localStorage.getItem(PUBKEY)); if (r) { usePublic(r); return true; } } catch (e) {}
+  return false;
+}
 async function loadPublic() {
   try {
-    const r = await call('getPublic');
-    cfg = Object.assign({}, DEFAULT_CONFIG, r.config || {}); busy = r.busy || []; fotos = r.fotos || [];
-  } catch (e) { toast('Não foi possível carregar a agenda. Tente de novo.'); }
-  applyBrand(cfg.cor); document.title = cfg.nome || 'Agenda';
+    const r = await call('getPublic'); usePublic(r);
+    if (IS_LIVE) try { localStorage.setItem(PUBKEY, JSON.stringify(r)); } catch (e) {}
+  } catch (e) { toast('Não foi possível carregar a agenda. Tente de novo.'); applyBrand(cfg.cor); }
 }
 
 const IC = {
@@ -672,9 +682,22 @@ const sess = {
 };
 let me = null, mine = [], view = 'home', step = 1, lastDone = null;
 
+const MINEKEY = 'agenda-mine-v1';
+function cachedMine() {
+  if (!me || !IS_LIVE) return;
+  try { const c = JSON.parse(localStorage.getItem(MINEKEY)); if (c && c.tel === me.tel) mine = c.list || []; } catch (e) {}
+}
 async function loadMine() {
   if (!me) return;
-  try { mine = (await call('getMine', me.tel)) || []; } catch (e) { mine = []; }
+  try { mine = (await call('getMine', me.tel)) || []; if (IS_LIVE) try { localStorage.setItem(MINEKEY, JSON.stringify({ tel: me.tel, list: mine })); } catch (e) {} }
+  catch (e) { cachedMine(); }
+}
+// Redesenha com dados novos sem atrapalhar quem está digitando.
+function refreshQuiet(v) {
+  const a = document.activeElement;
+  if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return;
+  if (admin && admin.pin) return;
+  if (view === v || (v === '*' && ['home', 'mine', 'salon', 'book'].includes(view))) renderClient();
 }
 const upcoming = () => { const t = dk(new Date()); return mine.filter(b => b.data >= t && b.status === 'agendado').sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora)); };
 
@@ -700,8 +723,9 @@ function shell({ title, back, body, tabs = true, action = '' }) {
 async function go(v) {
   view = v;
   if (v === 'book') { step = sel.svc ? step : 1; }
-  if (v === 'home' || v === 'mine') { await loadMine(); }
   renderClient();
+  if (v === 'home' || v === 'mine') loadMine().then(() => refreshQuiet(v));
+  if (v === 'book') loadPublic().then(() => { if (view === 'book' && step === 1) refreshQuiet('book'); });
 }
 
 function renderClient() {
@@ -849,7 +873,7 @@ async function doBook() {
     p.id = r && r.id; p.sinal = cfg.cobrarSinal ? 'pendente' : '';
     renderClient.obs = ''; sel = { svc: null, data: null, hora: null }; step = 1;
     lastDone = { b: p, fresh: true }; view = 'done';
-    await loadPublic(); await loadMine(); renderClient();
+    await Promise.all([loadPublic(), loadMine()]); renderClient();
   } catch (e) {
     await loadPublic(); step = 2; sel.hora = null; renderClient(); toast(e.message);
   }
@@ -1318,7 +1342,15 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 setInterval(checkUpdate, 5 * 60 * 1000);
 
 /* ====== Início ====== */
-(async () => { applyBrand(cfg.cor); await loadPublic(); me = sess.get(); if (me) await loadMine(); renderClient(); })();
+(async () => {
+  applyBrand(cfg.cor); me = sess.get();
+  if (cachedPublic()) {
+    cachedMine(); renderClient();
+    Promise.all([loadPublic(), loadMine()]).then(() => refreshQuiet('*'));
+  } else {
+    await Promise.all([loadPublic(), me ? loadMine() : null]); renderClient();
+  }
+})();
 </script>
 
 </body>
