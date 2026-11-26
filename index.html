@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#241419">
+<meta name="theme-color" content="#FFFFFF">
 <meta name="description" content="Agende seu horário de manicure em menos de um minuto, sem baixar app.">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/config.js"></script>
 <title>Agenda do Salão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,600;1,6..96,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout: página de salão em faixas (topo escuro vinho, corpo claro rosé, rodapé escuro); agendamento em 3 colunas no computador e empilhado no celular com barra fixa. */
 :root{
@@ -301,6 +301,66 @@ html{background:var(--soft)}
 .app .btn svg{flex:none}
 @media (prefers-reduced-motion: no-preference){.nail{transition:transform .5s cubic-bezier(.2,.8,.2,1)}.swatch:hover .nail{transform:rotate(var(--r)) translateY(-6px)!important}}
 @media (prefers-reduced-motion: no-preference){.opt,.day,.slot,.btn{transition:background-color .15s,border-color .15s,transform .1s}.btn:active{transform:scale(.98)}}
+
+/* ====== Visual profissional (sobrepõe o anterior) ====== */
+:root{
+  --bg:#F6F6F7; --surface:#FFFFFF; --fg:#17171A; --muted:#6C6C75; --line:#E6E6EA;
+  --soft:color-mix(in srgb, var(--brand) 9%, #FFFFFF);
+  --display:"Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --body:"Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111113;--surface:#1B1B1F;--fg:#F2F2F4;--muted:#A0A0AA;--line:#2C2C32;--soft:color-mix(in srgb, var(--brand) 18%, #1B1B1F)}}
+:root[data-theme="dark"]{--bg:#111113;--surface:#1B1B1F;--fg:#F2F2F4;--muted:#A0A0AA;--line:#2C2C32;--soft:color-mix(in srgb, var(--brand) 18%, #1B1B1F)}
+html{background:var(--bg)}
+body{font-size:15px;letter-spacing:-.005em}
+h1,h2,h3{font-family:var(--body);font-weight:700;letter-spacing:-.02em}
+em{font-style:normal;color:inherit}
+.eyebrow{font:500 .8rem var(--body);letter-spacing:0;text-transform:none;color:var(--muted)}
+.app{box-shadow:none}
+@media (min-width:520px){.app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+.appbar{background:var(--surface)}
+.appbar-t b{font:700 1.05rem var(--body)}
+.logo{border-radius:12px}
+.logo.sm{width:36px;height:36px;border-radius:10px;font-size:.85rem;font-family:var(--body);font-weight:700}
+.logo.lg{width:56px;height:56px;border-radius:14px;border:0;font:700 1.15rem var(--body)}
+.login-top{background:var(--surface);border-bottom:1px solid var(--line);border-radius:0;padding:28px 16px 24px;align-items:stretch;gap:16px}
+.login-top .cover{height:180px;border-radius:14px;overflow:hidden;margin:-12px -4px 0}
+.login-top .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.login-brand h1{font-size:1.3rem;font-weight:700}
+.login-brand .sub{font-size:.88rem;color:var(--muted)}
+.login-card{margin:16px;box-shadow:none;border-radius:16px}
+.btn{border-radius:10px;font-weight:600;padding:13px 18px}
+.btn.sm{border-radius:8px}
+.opt,.day,.slot,.card,.summary,.quote,.faq details,.bk,.next-row,.pick-sum,.about-card,.policy,.empty,.kpi,input,select,textarea{border-radius:12px}
+.opt{border-width:1px;padding:12px 14px}
+.opt[aria-pressed="true"]{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.ic-c{border-radius:10px;width:38px;height:38px}
+.day,.slot{border-width:1px}
+.day b{font:700 1.15rem var(--body)}
+.day span{letter-spacing:0;text-transform:none;font-size:.72rem}
+.hero-card{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px;min-height:0;padding:16px}
+.hero-card .eyebrow{color:var(--muted)}
+.hero-card .hc-when{font:700 1.2rem/1.25 var(--body);max-width:none}
+.hero-card .muted{color:var(--muted)}
+.summary{background:var(--surface);border:1px solid var(--line)}
+.summary .tot b{font:700 1.25rem var(--body);color:var(--fg)}
+.quote p{font:400 .95rem/1.5 var(--body)}
+.stars{font-size:.85rem}
+.about-card{text-align:left;align-items:flex-start}
+.about-card .pic{width:64px;height:64px;border-radius:14px;border:0;box-shadow:none;font:700 1.4rem var(--body)}
+.about-card p{color:var(--fg)}
+.lbl{font-size:.95rem;font-weight:700}
+.lbl svg,.col h3 svg{display:none}
+.sec-head h3{font-size:.95rem}
+.steps .step i{border-width:1px}
+.perk-s .ic{color:var(--brand)}
+.amount{font:800 1.6rem var(--body)}
+.done-ic{width:48px;height:48px;font-size:1.4rem}
+.tabbar button[aria-current="page"] svg{background:none;padding:0}
+.tabbar button[aria-current="page"] span{font-weight:700}
+.bk{border-left-width:3px}
+.chip{letter-spacing:.02em;font-size:.68rem;border-radius:6px}
+.banner{border-radius:10px}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 </head>
@@ -605,13 +665,13 @@ function renderEntrar() {
   $('#app').className = 'app';
   $('#app').innerHTML = `
     ${IS_LIVE ? '' : `<div class="demo-pill">${demoBanner()}</div>`}
-    <div class="login-top noir">
-      <div class="login-art">${fotos.length ? `<div class="arch"><img alt="" src="${esc(fotos[0].img)}"></div>` : swatchHTML()}</div>
-      <div class="login-brand">${logoHTML('lg')}<div><div class="eyebrow">Agendamento online</div><h1>${esc(cfg.nome)}</h1></div></div>
+    <div class="login-top ${fotos.length ? 'has-cover' : ''}">
+      ${fotos.length ? `<div class="cover"><img alt="" src="${esc(fotos[0].img)}"></div>` : ''}
+      <div class="login-brand">${logoHTML('lg')}<div><h1>${esc(cfg.nome)}</h1><div class="sub">${esc(cfg.descricao)}</div></div></div>
     </div>
     <form class="login-card stack" id="enter" novalidate>
-      <h2 class="sec-title" style="font-size:1.6rem">Unhas lindas, <em>do seu jeito.</em></h2>
-      <p class="muted" style="margin:0">Entre com seu nome e WhatsApp para agendar e acompanhar seus horários.</p>
+      <h2 style="font-size:1.25rem">Entrar</h2>
+      <p class="muted" style="margin:0">Use seu nome e WhatsApp para agendar e acompanhar seus horários.</p>
       <label>Seu nome<input id="eNome" autocomplete="name" maxlength="80" placeholder="Como podemos te chamar?"></label>
       <label>WhatsApp com DDD<input id="eTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 91234-5678"></label>
       <div class="err" id="eErr" hidden></div>
@@ -637,15 +697,14 @@ function vHome() {
     title: `Oi, ${firstName(me.nome)}!`,
     action: `<button class="icon-btn" data-nav2="salon" aria-label="Sobre o salão">${IC.user}</button>`,
     body: `
-      ${nx ? `<div class="hero-card noir">
+      ${nx ? `<div class="hero-card">
           <div class="eyebrow">Seu próximo horário</div>
-          <div class="hc-when">${esc(fmtDate(nx.data))} <em>às ${esc(nx.hora)}</em></div>
+          <div class="hc-when">${esc(fmtDate(nx.data))}, ${esc(nx.hora)}</div>
           <div class="muted">${esc(nx.servico)} · ${esc(dur(nx.duracao))}</div>
           ${nx.sinal === 'pendente' ? `<button class="btn sm" data-pay="${esc(nx.id)}" style="align-self:flex-start;margin-top:6px">Pagar sinal pelo Pix</button>` : nx.sinal === 'pago' ? `<span class="chip" style="--st:var(--ok);align-self:flex-start">Sinal pago</span>` : ''}
-        </div>` : `<div class="hero-card noir">
-          <div class="hc-art">${fotos.length ? `<img alt="" src="${esc(fotos[0].img)}">` : swatchHTML('mini')}</div>
-          <div class="eyebrow">Que tal hoje?</div>
-          <div class="hc-when">Bora deixar as unhas <em>em dia?</em></div>
+        </div>` : `<div class="hero-card">
+          <div class="eyebrow">Nenhum horário marcado</div>
+          <div class="hc-when">Agende seu próximo atendimento</div>
           <button class="btn" data-nav2="book" style="align-self:flex-start;margin-top:8px">Agendar horário</button>
         </div>`}
       ${prox ? `<div class="next-row"><span class="dot"></span><span>Próximo horário livre: <b>${esc(fmtDate(prox.data))} às ${esc(prox.hora)}</b></span></div>` : ''}
@@ -818,8 +877,8 @@ function vSalon() {
     body: `
       <div class="about-card">
         <div class="pic">${fotos[1] ? `<img alt="" src="${esc(fotos[1].img)}">` : cfg.logo ? `<img alt="" src="${esc(cfg.logo)}">` : esc(initials(nomeCurto))}</div>
-        <div class="eyebrow">Prazer, ${esc(nomeCurto)}</div>
-        <h2 class="sec-title" style="font-size:1.5rem">Mais que esmalte, <em>um momento seu.</em></h2>
+        <h2 style="font-size:1.2rem">${esc(nomeCurto)}</h2>
+        <div class="eyebrow">${esc(cfg.descricao)}</div>
         ${cfg.sobre ? `<p>${esc(cfg.sobre)}</p>` : ''}
       </div>
       ${fotos.length ? `<h3 class="lbl">Trabalhos</h3><div class="gal">${fotos.map((f, i) => `<button data-foto="${i}" aria-label="Ver foto ${i + 1}"><img alt="" loading="lazy" src="${esc(f.img)}"></button>`).join('')}</div>` : ''}
@@ -855,8 +914,8 @@ function renderLogin() {
   $('#app').className = 'app'; window.scrollTo(0, 0);
   $('#app').innerHTML = `
     ${IS_LIVE ? '' : `<div class="demo-pill">${demoBanner()}</div>`}
-    <div class="login-top noir" style="padding-bottom:40px">
-      <div class="login-brand">${logoHTML('lg')}<div><div class="eyebrow">Área da manicure</div><h1>${esc(cfg.nome)}</h1></div></div>
+    <div class="login-top">
+      <div class="login-brand">${logoHTML('lg')}<div><h1>${esc(cfg.nome)}</h1><div class="sub">Área da manicure</div></div></div>
     </div>
     <div class="login-card stack">
       <h1 style="font-size:1.5rem">Entrar no painel</h1>

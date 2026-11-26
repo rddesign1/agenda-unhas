@@ -4,8 +4,8 @@
   "description": "Agende seu horário de manicure sem baixar app.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FBF5F3",
-  "theme_color": "#241419",
+  "background_color": "#F6F6F7",
+  "theme_color": "#FFFFFF",
   "lang": "pt-BR",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
