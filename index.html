@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/config.js"></script>
-<meta name="app-build" content="27/11 09:10">
+<meta name="app-build" content="27/11 09:55">
 <title>Agenda do Salão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -639,6 +639,8 @@ const Demo = (() => {
     adminLogin(p) { check(p); return { config: load().config, bookings: load().bookings, fotos: load().fotos || [], url: '' }; },
     adminSetSinal(p, i, v) { check(p); const b = load().bookings.find(x => x.id === i); if (b) b.sinal = v; save(); return { ok: true }; },
     adminAddPhoto(p, img) { check(p); const s = load(); s.fotos = s.fotos || []; if (s.fotos.length >= 12) throw new Error('Limite de 12 fotos. Remova uma para adicionar outra.'); s.fotos.push({ id: id(), img }); save(); return { ok: true, fotos: s.fotos }; },
+    adminSetWhats(p, w) { check(p); throw new Error('No modo demonstração o WhatsApp automático não funciona.'); },
+    adminTestWhats(p) { check(p); throw new Error('No modo demonstração o WhatsApp automático não funciona.'); },
     adminRemovePhoto(p, i) { check(p); const s = load(); s.fotos = (s.fotos || []).filter(f => f.id !== i); save(); return { ok: true, fotos: s.fotos }; },
     adminSaveConfig(p, c) { check(p); load().config = c; save(); return { ok: true }; },
     adminSetStatus(p, i, st) { check(p); const b = load().bookings.find(x => x.id === i); if (b) b.status = st; save(); return { ok: true }; },
@@ -1106,7 +1108,7 @@ function renderLogin() {
 
 async function adminReload() {
   const r = await call('adminLogin', admin.pin);
-  admin.bookings = r.bookings || []; admin.fotos = r.fotos || []; admin.url = r.url || '';
+  admin.bookings = r.bookings || []; admin.fotos = r.fotos || []; admin.url = r.url || ''; admin.whats = r.whats || null;
   cfg = Object.assign({}, DEFAULT_CONFIG, r.config || {}); applyBrand(cfg.cor);
 }
 
@@ -1324,6 +1326,22 @@ function renderConfig() {
         <label>Política de cancelamento<textarea id="cPol" maxlength="400">${esc(c.politica)}</textarea></label>
       </div>
 
+
+      <div class="card stack" id="waCard">
+        <h3>WhatsApp automático</h3>
+        ${(() => { const w = admin.whats || {}; return `
+        <p class="muted small" style="margin:0">${w.ativo && w.configurado ? '<b style="color:var(--brand)">Ligado.</b> A cliente recebe a confirmação ao agendar e um lembrete 24 horas antes.' : 'Desligado. Quando ligar, a cliente recebe a confirmação ao agendar e um lembrete 24 horas antes, pelo número do salão.'}</p>
+        <label>ID do número de telefone<input id="waPid" inputmode="numeric" maxlength="24" value="${esc(w.phoneId || '')}" placeholder="Copie do painel da Meta"></label>
+        <label>Token de acesso<input id="waTok" type="password" autocomplete="off" placeholder="${w.configurado ? 'Já salvo. Cole outro só se quiser trocar' : 'Cole o token da Meta aqui'}"></label>
+        <label class="toggle"><input type="checkbox" id="waOn" ${w.ativo ? 'checked' : ''}>Enviar confirmação e lembrete automaticamente</label>
+        <button type="button" class="btn ghost sm" id="waSave">Salvar WhatsApp</button>
+        <div class="row" style="align-items:end">
+          <label>Enviar teste para<input id="waTel" inputmode="tel" maxlength="16" placeholder="(11) 99999-9999"></label>
+          <button type="button" class="btn ghost sm" id="waTest" style="flex:none">Enviar teste</button>
+        </div>
+        ${w.ultimoErro ? `<div class="err">Último erro: ${esc(w.ultimoErro)}</div>` : ''}`; })()}
+      </div>
+
       <div class="card stack">
         <h3>Fotos dos seus trabalhos</h3>
         <p class="tip" style="margin:0">Aparecem no topo da página de agendamento. Até 12 fotos. Salvam na hora.</p>
@@ -1383,6 +1401,19 @@ function renderConfig() {
       catch (er) { toast(er.message); break; }
     }
     renderConfig(); toast('Fotos salvas');
+  };
+  $('#waSave').onclick = async () => {
+    sync();
+    try {
+      const tok = $('#waTok').value.trim();
+      admin.whats = await call('adminSetWhats', admin.pin, Object.assign({ phoneId: $('#waPid').value.trim(), ativo: $('#waOn').checked }, tok ? { token: tok } : {}));
+      renderConfig(); toast(admin.whats.ativo && admin.whats.configurado ? 'WhatsApp ligado' : 'WhatsApp salvo');
+    } catch (e) { toast(e.message); }
+  };
+  $('#waTest').onclick = async () => {
+    sync();
+    try { await call('adminTestWhats', admin.pin, $('#waTel').value); toast('Mensagem de teste enviada'); }
+    catch (e) { toast(e.message); }
   };
   $('#cf').onsubmit = async e => {
     e.preventDefault(); sync(); const err = $('#cErr'); err.hidden = true;
