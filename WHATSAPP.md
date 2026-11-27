@@ -29,7 +29,7 @@ Em **WhatsApp Manager > Modelos de mensagem > Criar modelo**. Categoria **Utilid
 
 **Nome:** `confirmacao_agendamento`
 
-> Olá, {{1}}! Seu horário de {{2}} no {{5}} está confirmado para {{3}} às {{4}}. Se precisar remarcar, é só responder esta mensagem.
+> Olá, {{1}}! Seu horário de {{2}} está confirmado para {{3}} às {{4}}, no {{5}}. Se precisar remarcar, é só responder esta mensagem.
 
 **Nome:** `lembrete_agendamento`
 
