@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/config.js"></script>
-<meta name="app-build" content="27/11 08:45">
+<meta name="app-build" content="27/11 08:53">
 <title>Agenda do Salão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -440,6 +440,21 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 @keyframes tabOut{0%{color:var(--on-brand)}35%,100%{color:var(--muted)}}
 @keyframes tabPop{0%,50%{transform:scale(1)}78%{transform:scale(1.14)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.tabbar.anim button,.tabbar.anim svg{animation:none!important}}
+
+/* Carregando: spinner no botão, barra no topo e tela de abertura */
+.loading{position:relative;color:transparent!important;pointer-events:none}
+.loading:disabled,.btn.loading{opacity:1;cursor:progress}
+.loading>*{visibility:hidden}
+.loading::after{content:"";position:absolute;inset:0;margin:auto;width:1.15em;height:1.15em;max-width:20px;max-height:20px;border-radius:50%;
+  border:2px solid var(--spin-c,currentColor);border-right-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.busybar{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;pointer-events:none;opacity:0;overflow:hidden;transition:opacity .2s}
+html.is-busy .busybar{opacity:1;transition-delay:.25s}
+.busybar::before{content:"";position:absolute;top:0;bottom:0;width:40%;left:-40%;background:var(--brand);border-radius:3px;animation:busy 1.15s cubic-bezier(.65,0,.35,1) infinite}
+@keyframes busy{to{left:100%}}
+.boot{min-height:70vh;display:grid;place-items:center;align-content:center;gap:14px;color:var(--muted);font:500 .9rem var(--body)}
+.boot i{width:34px;height:34px;border-radius:50%;border:3px solid var(--soft);border-top-color:var(--brand);animation:spin .8s linear infinite}
+@media (prefers-reduced-motion:reduce){.loading::after,.boot i{animation-duration:1.6s}.busybar::before{animation:none;left:0;width:100%;opacity:.5}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 </head>
@@ -447,7 +462,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<div class="wrap" id="app"><p class="muted">Carregando agenda…</p></div>
+<div class="busybar" aria-hidden="true"></div>
+<div class="wrap" id="app"><div class="boot" role="status"><i></i>Carregando agenda…</div></div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -563,7 +579,29 @@ async function callApi(fn, args) {
   if (!j.ok) throw new Error(j.error || 'Algo deu errado.');
   return j.data;
 }
-function call(fn, ...args) {
+/* Enquanto a planilha responde: o botão tocado vira um spinner (e não aceita 2º toque) e aparece uma barra no topo. */
+let ACT_BTN = null, ACT_T = 0, PENDING = 0, RELEASE = null;
+const BUSY_BTNS = new Set();
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { ACT_BTN = b; ACT_T = Date.now(); } }, true);
+document.addEventListener('submit', e => { const b = e.submitter || e.target.querySelector('button:not([type="button"])'); if (b) { ACT_BTN = b; ACT_T = Date.now(); } }, true);
+function startBusy() {
+  PENDING++; clearTimeout(RELEASE); document.documentElement.classList.add('is-busy');
+  const b = ACT_BTN;
+  if (b && Date.now() - ACT_T < 800 && b.isConnected && !b.closest('.tabbar') && !BUSY_BTNS.has(b)) {
+    b.style.setProperty('--spin-c', getComputedStyle(b).color); b.classList.add('loading'); b.disabled = true; b.setAttribute('aria-busy', 'true'); BUSY_BTNS.add(b);
+  }
+  return () => {
+    if (--PENDING > 0) return;
+    PENDING = 0; ACT_BTN = null;
+    // Pequena folga: ações que fazem 2 chamadas seguidas mantêm o spinner até o fim.
+    RELEASE = setTimeout(() => {
+      document.documentElement.classList.remove('is-busy');
+      BUSY_BTNS.forEach(b => { b.classList.remove('loading'); b.disabled = false; b.removeAttribute('aria-busy'); }); BUSY_BTNS.clear();
+    }, 120);
+  };
+}
+function call(fn, ...args) { const done = startBusy(); return rawCall(fn, ...args).finally(done); }
+function rawCall(fn, ...args) {
   if (USE_API) return callApi(fn, args);
   if (IN_GAS) return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(e => rej(new Error((e && e.message) || String(e))))[fn](...args));
   return new Promise((res, rej) => setTimeout(() => { try { res(Demo[fn](...args)); } catch (e) { rej(e); } }, 150));
@@ -1047,7 +1085,7 @@ function renderLogin() {
     </div>`;
   $('#back').onclick = () => renderClient();
   const saved = memo.get();
-  if (saved) { admin.pin = saved; adminReload().then(renderAdmin).catch(() => { memo.set(null); admin.pin = null; $('#pin').focus(); }); }
+  if (saved) { ACT_BTN = $('#lf button'); ACT_T = Date.now(); admin.pin = saved; adminReload().then(renderAdmin).catch(() => { memo.set(null); admin.pin = null; $('#pin').focus(); }); }
   else $('#pin').focus();
   $('#lf').onsubmit = async e => {
     e.preventDefault(); const pin = $('#pin').value;
