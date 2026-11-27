@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="/config.js"></script>
-<meta name="app-build" content="26/11 11:29">
+<meta name="app-build" content="27/11 08:37">
 <title>Agenda do Salão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
@@ -427,6 +427,18 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-o
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));row-gap:10px}
 .kpi b{font-size:1.05rem;white-space:nowrap}
 .kpi{min-width:0}
+
+/* Indicador que desliza entre as abas do rodapé */
+.tabbar button{position:relative;z-index:1}
+.tab-ind{position:absolute;left:0;top:0;width:60px;height:32px;border-radius:99px;background:var(--soft);z-index:0;pointer-events:none;
+  transition:transform .42s cubic-bezier(.45,.05,.25,1),width .42s cubic-bezier(.45,.05,.25,1)}
+.tabbar.anim button[aria-current="page"]{animation:tabIn .42s ease both}
+.tabbar.anim button.was{animation:tabOut .42s ease both}
+.tabbar.anim button[aria-current="page"] svg{animation:tabPop .42s cubic-bezier(.45,.05,.25,1)}
+@keyframes tabIn{from{color:var(--muted)}to{color:var(--brand)}}
+@keyframes tabOut{from{color:var(--brand)}to{color:var(--muted)}}
+@keyframes tabPop{0%{transform:scale(1)}55%{transform:scale(1.12)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.tab-ind{transition:none}.tabbar.anim button,.tabbar.anim svg{animation:none!important}}
 </style>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 </head>
@@ -701,6 +713,29 @@ function refreshQuiet(v) {
 }
 const upcoming = () => { const t = dk(new Date()); return mine.filter(b => b.data >= t && b.status === 'agendado').sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora)); };
 
+
+/* ====== Animação das abas do rodapé ====== */
+const TAB_LAST = {};
+function animTabbar() {
+  const nav = document.querySelector('#app .tabbar'); if (!nav) return;
+  const btns = [...nav.querySelectorAll('button')];
+  const i = btns.findIndex(b => b.getAttribute('aria-current') === 'page'); if (i < 0) return;
+  const key = nav.getAttribute('aria-label');
+  const from = key in TAB_LAST ? TAB_LAST[key] : i; TAB_LAST[key] = i;
+  const ind = document.createElement('span'); ind.className = 'tab-ind'; ind.setAttribute('aria-hidden', 'true'); nav.prepend(ind);
+  const place = k => {
+    const nr = nav.getBoundingClientRect(), r = btns[k].querySelector('svg').getBoundingClientRect();
+    ind.style.transform = `translate(${Math.round(r.left - nr.left + r.width / 2 - 30)}px, ${Math.round(r.top - nr.top + r.height / 2 - 16)}px)`;
+  };
+  ind.style.transition = 'none'; place(from); ind.getBoundingClientRect(); ind.style.transition = '';
+  if (from !== i) {
+    btns[from].classList.add('was'); nav.classList.add('anim');
+    requestAnimationFrame(() => place(i));
+  }
+  nav._place = () => { ind.style.transition = 'none'; place(i); };
+}
+window.addEventListener('resize', () => { const n = document.querySelector('#app .tabbar'); if (n && n._place) n._place(); });
+
 /* ====== Moldura do app ====== */
 function shell({ title, back, body, tabs = true, action = '' }) {
   $('#app').className = 'app';
@@ -718,7 +753,7 @@ function shell({ title, back, body, tabs = true, action = '' }) {
     </nav>` : ''}`;
   if (back) $('#backBtn').onclick = back;
   $('#app').querySelectorAll('[data-nav]').forEach(b => b.onclick = () => go(b.dataset.nav));
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0); animTabbar();
 }
 async function go(v) {
   view = v;
@@ -1041,7 +1076,7 @@ function renderAdmin() {
     <nav class="tabbar" aria-label="Menu do painel">
       ${[['agenda', 'Agenda', IC.cal], ['retorno', 'Retorno', IC.undo], ['config', 'Meu salão', IC.shop]].map(([k, l, i]) => `<button data-tab="${k}" aria-current="${admin.tab === k ? 'page' : 'false'}">${i}<span>${l}</span></button>`).join('')}
     </nav>`;
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0); animTabbar();
   $('#sair').onclick = async () => { memo.set(null); admin = { pin: null, bookings: [], fotos: [], url: '', tab: 'agenda', day: dk(new Date()), draft: null }; await loadPublic(); view = 'home'; renderClient(); };
   $('#app').querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { admin.tab = b.dataset.tab; admin.draft = null; renderAdmin(); });
   ({ agenda: renderAgenda, retorno: renderRetorno, config: renderConfig })[admin.tab]();
